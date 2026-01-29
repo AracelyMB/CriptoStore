@@ -157,3 +157,51 @@ btnBuy.onclick = buyAndReward;
 
 </body>
 </html>
+<div class="card">
+    <h2>🎁 Reclamar mis 10 ARY de regalo</h2>
+    <p class="muted">Ingresa tu wallet de MetaMask para recibir tu premio gratis.</p>
+    <input type="text" id="custWallet" placeholder="0x..." />
+    <button id="btnClaim" style="margin-top:10px">¡Reclamar Recompensa!</button>
+    
+    <div id="loader" style="display:none;">Procesando envío... (espera unos segundos)</div>
+    <p id="result" class="muted"></p>
+</div>
+
+<script>
+    const btnClaim = document.getElementById('btnClaim');
+    const resultText = document.getElementById('result');
+    const loader = document.getElementById('loader');
+
+    btnClaim.onclick = async () => {
+        const address = document.getElementById('custWallet').value.trim();
+        
+        if(address.length < 42) return alert("Dirección no válida");
+
+        btnClaim.disabled = true;
+        loader.style.display = 'block';
+        resultText.innerText = "";
+
+        try {
+            // CAMBIA ESTA URL por la de tu servidor (ej. Render o Railway)
+            const response = await fetch('http://localhost:3000/reward', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customerAddress: address })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                resultText.innerHTML = `✅ ¡Éxito! <br> Hash: <a href="https://sepolia.etherscan.io/tx/${data.txHash}" target="_blank">${data.txHash}</a>`;
+            } else {
+                resultText.innerText = "❌ Error: " + data.error;
+            }
+        } catch (err) {
+            resultText.innerText = "❌ No se pudo conectar con el servidor.";
+        } finally {
+            btnClaim.disabled = false;
+            loader.style.display = 'none';
+        }
+    };
+</script>
+
